@@ -1,0 +1,5 @@
+SECTION_SEARCH = "\[\[.*\#\^.*\]\]"
+HEADING_SEARCH = "\[\[.*\#.*\]\]"
+EMBED_SEARCH = "\!\[\[.*\]\]"
+SECTION_TITLE = "(?<=\[\[).*(?=\#)"
+REGULAR_TITLE = "(?<=\[\[).*(?=\]\])"

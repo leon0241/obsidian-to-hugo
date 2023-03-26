@@ -1,6 +1,7 @@
 import os
 import configparser as ini_p
 import re
+import regex_variables.py as revar
 
 def find_ignore(root):
 	for filename in os.listdir(root):
@@ -121,11 +122,25 @@ def convert_file(filename):
 			# Split tags into array and remove the tag_id
 			flags["tags"] = extracted[i].split()[lenz:]
 
+	extracted = search_links(extracted)
 	print(flags)
+
+def search_links(extracted, directory):
+    for i, line in enumerate(extracted):
+        link_search = re.search("\[\[.*\]\]", line)
+        # then it found a link in the line
+        if link_search != None:
+            SECTION_SEARCH = "\[\[.*\#\^.*\]\]"
+            HEADING_SEARCH = "\[\[.*\#.*\]\]"
+            EMBED_SEARCH = "\!\[\[.*\]\]"
+            SECTION_TITLE = "(?<=\[\[).*(?=\#)"
+            REGULAR_TITLE = "(?<=\[\[).*(?=\]\])"
+
 
 BASE_DIR = "tests/vault"
 IGNORE_DIRECTORIES = find_ignore(BASE_DIR)
 INI_STRINGS, INI_OPTIONS = ini_read(BASE_DIR)
 
-print(recursive_search(BASE_DIR))
+directory = recursive_search(BASE_DIR)
+print(directory)
 convert_file("tests/vault/b/Abelian Group.md")
