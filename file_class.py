@@ -1,4 +1,4 @@
-import re
+import regex as re
 
 class File:
     def __init__(self, title, path):
@@ -18,6 +18,9 @@ class File:
     def __str__(self):
         return self.title
     
+    def __repr__(self):
+        return f'({self.title}, {self.path}, {self.tags})'
+
     def get_title(self):
         return self.title
     
@@ -38,7 +41,7 @@ class File:
             end_index = 1
             while True:
                 # if it's a frontmatter, else go next line until
-                if(self.content[end_index][:3] == "\'\'\'"):
+                if(self.contents[end_index][:3] == "\'\'\'"):
                     break
                 else:
                     end_index += 1
@@ -57,11 +60,11 @@ class File:
         # min to not overflow if there's less than 10 lines in a file
         for line in range(min(10, len(self.contents))):
             # If string begins with the tag id
-            if (self.contents[line].startswith(TAG_STRING["tag_id"])):
+            if (self.contents[line].startswith(TAG_STRING)):
                 # How many words to offset split
                 # e.g. if tag phrase was "Tags:" then length is 1
                 # e.g. if tag phrase was "Tags here:" then length is 2
-                tag_string_length = len(TAG_STRING["tag_id"].split())
+                tag_string_length = len(TAG_STRING.split())
 
                 # Split tags into array (without the tag string)
                 self.tags = self.contents[line].split()[tag_string_length:]
@@ -74,22 +77,21 @@ class File:
         # "Non capture lookbehind between 1 and 6 '#' (indicates header)"
         # captures everything after that
         REGEX_HEADER = "(?<=^\#{1,6}\s).*"
-        
         # does the line have a header or not
         does_line_have_header = re.search(REGEX_HEADER, line)
         
         # if it does have a header
         if does_line_have_header != None:
-            # temp step to keep the loop
-            does_line_have_header = False
-
             # set starting line variable
             header_start = current_index
             header_title = does_line_have_header.group()
+            print("------------")
             print(header_start)
             print(header_title)
+            print("----------")
             # loop continuously
-            while True:
+            while (does_line_have_header == None) and (current_index <= len(self.contents)):
+                # temp step to keep the loop
                 current_index += 1
                 does_line_have_header = re.match(REGEX_HEADER, self.contents[current_index])
                 break

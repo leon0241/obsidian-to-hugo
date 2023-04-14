@@ -1,6 +1,6 @@
 import os
 import configparser as ini_p
-import re
+import regex as re
 import regex_variables as revar
 from importlib import reload
 
@@ -116,11 +116,11 @@ def extract_lines(filename):
     return extracted.readlines()
 
 def get_information_from_file(Directories):
-    if INI_OPTIONS.make_frontmatter == True:
+    if INI_OPTIONS["make_frontmatter"] == True:
         for File in Directories:
             File.find_frontmatter()
     
-        if INI_OPTIONS.make_frontmatter_tags == True:
+        if INI_OPTIONS["make_frontmatter_tags"] == True:
             for File in Directories:
                 File.find_tags(INI_STRINGS["tag_id"])
 
@@ -190,4 +190,8 @@ print(directory)
 for file in directory:
     print(file)
 
-get_information_from_file("tests/vault/b/Abelian Group.md")
+# get_information_from_file("tests/vault/b/Abelian Group.md")
+get_information_from_file(directory)
+
+for file in directory:
+    print(repr(file))
