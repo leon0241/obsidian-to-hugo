@@ -1,9 +1,11 @@
+import re
+
 class File:
     def __init__(self, title, path):
         self.title = title
         self.path = path
 
-        self.tags
+        self.tags = []
         
         self.contains_frontmatter = False
         self.checkpoints = {
@@ -67,3 +69,45 @@ class File:
         else:
             print("Warning: Tag was not found :/")
             return
+    
+    def look_for_headers(self, line, current_index):
+        # "Non capture lookbehind between 1 and 6 '#' (indicates header)"
+        # captures everything after that
+        REGEX_HEADER = "(?<=^\#{1,6}\s).*"
+        
+        # does the line have a header or not
+        does_line_have_header = re.search(REGEX_HEADER, line)
+        
+        # if it does have a header
+        if does_line_have_header != None:
+            # temp step to keep the loop
+            does_line_have_header = False
+
+            # set starting line variable
+            header_start = current_index
+            header_title = does_line_have_header.group()
+            print(header_start)
+            print(header_title)
+            # loop continuously
+            while True:
+                current_index += 1
+                does_line_have_header = re.match(REGEX_HEADER, self.contents[current_index])
+                break
+        else:
+            return
+
+    def look_for_blocks(self, line):
+        return
+
+    def look_for_links(self, line):
+        return
+
+    def look_for_embeds(self, line):
+        return
+
+    def the_big_sweeper(self):
+        for i, line in enumerate(self.contents):
+            self.look_for_headers(line, i)
+            # self.look_for_blocks(line, i)
+            # self.look_for_links(line)
+            # self.look_for_embeds(line)

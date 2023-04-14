@@ -115,66 +115,69 @@ def extract_lines(filename):
     extracted = open(filename, "r")
     return extracted.readlines()
 
-def get_information_from_files(Directories):
+def get_information_from_file(Directories):
     if INI_OPTIONS.make_frontmatter == True:
         for File in Directories:
             File.find_frontmatter()
     
         if INI_OPTIONS.make_frontmatter_tags == True:
             for File in Directories:
-                
+                File.find_tags(INI_STRINGS["tag_id"])
+
+    for File in Directories:
+        File.the_big_sweeper()
 
 
-def convert_file(filename):
-    # flags (do all these at the end so loops don't mess up)
-    flags = {
-        "replace_fm": False,
-        "fm_ending": 0,
-        # random regex string i found online
-        "title": re.search("(?:[^\\/](?!(\\|/)))+$", filename).group()[:-3],
-        "tags": []
-    }
+# def convert_file(filename):
+#     # flags (do all these at the end so loops don't mess up)
+#     flags = {
+#         "replace_fm": False,
+#         "fm_ending": 0,
+#         # random regex string i found online
+#         "title": re.search("(?:[^\\/](?!(\\|/)))+$", filename).group()[:-3],
+#         "tags": []
+#     }
 
-    # extract lines and store in an array
-    extracted = extract_lines(filename)
+#     # extract lines and store in an array
+#     extracted = extract_lines(filename)
 
-    # if there's frontmatter already, check where to replace it from
-    if (extracted[0][:3] == "\'\'\'" and INI_OPTIONS["gen_fm"] == True):
-        print("true")
-        flags["replace_fm"] = True
+#     # if there's frontmatter already, check where to replace it from
+#     if (extracted[0][:3] == "\'\'\'" and INI_OPTIONS["gen_fm"] == True):
+#         print("true")
+#         flags["replace_fm"] = True
         
-        # get index of frontmatter end clause
-        end_index = 1
-        while True:
-            # if it's a frontmatter, else go next line until
-            if(extracted[end_index][:3] == "\'\'\'"):
-                break
-            else:
-                end_index += 1
-        flags["fm_ending"] = end_index
+#         # get index of frontmatter end clause
+#         end_index = 1
+#         while True:
+#             # if it's a frontmatter, else go next line until
+#             if(extracted[end_index][:3] == "\'\'\'"):
+#                 break
+#             else:
+#                 end_index += 1
+#         flags["fm_ending"] = end_index
     
-    # Searches first 10 lines, could be more but i'd imagine tags are at top
-    for i in range(min(10, len(extracted))):
-        # If string begins with the tag id
-        if (extracted[i].startswith(INI_STRINGS["tag_id"])):
-            # How many words to offset split
-            lenz = len(INI_STRINGS["tag_id"].split())
-            # Split tags into array and remove the tag_id
-            flags["tags"] = extracted[i].split()[lenz:]
+#     # Searches first 10 lines, could be more but i'd imagine tags are at top
+#     for i in range(min(10, len(extracted))):
+#         # If string begins with the tag id
+#         if (extracted[i].startswith(INI_STRINGS["tag_id"])):
+#             # How many words to offset split
+#             lenz = len(INI_STRINGS["tag_id"].split())
+#             # Split tags into array and remove the tag_id
+#             flags["tags"] = extracted[i].split()[lenz:]
 
-    extracted = search_links(extracted)
-    print(flags)
+#     extracted = search_links(extracted)
+#     print(flags)
 
-def search_links(extracted, directory):
-    for i, line in enumerate(extracted):
-        link_search = re.search("\[\[.*\]\]", line)
-        # then it found a link in the line
-        if link_search != None:
-            SECTION_SEARCH = "\[\[.*\#\^.*\]\]"
-            HEADING_SEARCH = "\[\[.*\#.*\]\]"
-            EMBED_SEARCH = "\!\[\[.*\]\]"
-            SECTION_TITLE = "(?<=\[\[).*(?=\#)"
-            REGULAR_TITLE = "(?<=\[\[).*(?=\]\])"
+# def search_links(extracted, directory):
+#     for i, line in enumerate(extracted):
+#         link_search = re.search("\[\[.*\]\]", line)
+#         # then it found a link in the line
+#         if link_search != None:
+#             SECTION_SEARCH = "\[\[.*\#\^.*\]\]"
+#             HEADING_SEARCH = "\[\[.*\#.*\]\]"
+#             EMBED_SEARCH = "\!\[\[.*\]\]"
+#             SECTION_TITLE = "(?<=\[\[).*(?=\#)"
+#             REGULAR_TITLE = "(?<=\[\[).*(?=\]\])"
 
 
 BASE_DIR = "tests/vault"
@@ -187,4 +190,4 @@ print(directory)
 for file in directory:
     print(file)
 
-convert_file("tests/vault/b/Abelian Group.md")
+get_information_from_file("tests/vault/b/Abelian Group.md")
