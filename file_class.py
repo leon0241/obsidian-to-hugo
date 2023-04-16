@@ -212,11 +212,6 @@ class File:
         else:
             return
 
-    def get_section_contents(self):
-        # wip
-        for section in self.header_sections:
-            subsection = self.contents[section["start"]:section["end"]]
-
     def look_for_links(self, line, current_index):
         """
         Finds links in a line. Gets type, whether it is an embed, and whether it has alt text.
@@ -286,41 +281,47 @@ class File:
         else:
             return
 
+    def get_section_contents(self, section):
+        return self.contents[section["start"]:section["end"]]
+    
     def find_section_in_file(self, reference, type):
         REGEX_LINK = "(?<=!?\[\[).*(?=\]\])"
         REGEX_ALT = "\|"
         
         if type == "block":
             for block in self.block_sections:
-                print("----------------")
+                # set to reference
                 clean_block = block["ref"]
-                print("block ref: " + clean_block)
                 
                 if clean_block == reference:
-                    print("FOUND")
-                    return block
-            return
+                    return self.get_section_contents(block)
+            else:
+                raise Exception("No block was found")
         elif type == "header":
             for header in self.header_sections:
-                print("----------------")
+                # if header is e.g. ![[header name]] then get only text
+                
+                # check if header is of link format
                 clean_header = re.search(REGEX_LINK, header["ref"])
                 if clean_header != None:
-                    print("original title: " + header["ref"])
                     clean_header = clean_header.group()
-                    if re.search(REGEX_ALT, clean_header) != -1:
+                    # if there is alt text then replace it with a space
+                    if re.search(REGEX_ALT, clean_header) != None:
                         clean_header = clean_header.replace("|", " ", 1)
-                        print(clean_header)
+                # if it isn't then just set it to the reference
                 else:
                     clean_header = header["ref"]
-                print("header ref: " + clean_header)
                 
                 if clean_header == reference:
-                    print("FOUND")
-                    return header
-            return
+                    return self.get_section_contents(header)
+            else:
+                raise Exception("No header was found")
         elif type == "page":
             print("FOUND")
-            return
+            temp_section = {"start": 0, "end": len(self.contents)}
+            return self.get_section_contents(temp_section)
+        else:
+            raise Exception("Nothing was found")
 
     def the_big_sweeper(self):
         '''Iterate over every line finding headers, blocks, and links
@@ -337,7 +338,6 @@ class File:
             self.look_for_headers(line, i)
             self.look_for_blocks(line, i)
             self.look_for_links(line, i)
-        self.get_section_contents()
     
     def the_big_parser(self):
         REGEX_PURE_TITLE = ".*(?=#|\|)"

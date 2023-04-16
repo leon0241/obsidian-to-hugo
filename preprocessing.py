@@ -143,7 +143,7 @@ def parse_files(Directories):
             print()
             print("@@@@@@@@@@@@@@@@@@@@@")
             print("file to look in: " + str(embed_file))
-            embed_file.find_section_in_file(callback["identifier"], callback["type"])
+            print(embed_file.find_section_in_file(callback["identifier"], callback["type"]))
 
 BASE_DIR = "tests/vault"
 IGNORE_DIRECTORIES = find_pyignore_file(BASE_DIR)
