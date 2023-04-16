@@ -116,7 +116,7 @@ def recursive_search(root, base_root=None):
                 Directories.append(NewClass)
     return Directories
 
-def get_information_from_file(Directories):
+def get_information_from_files(Directories):
     if INI_OPTIONS["make_frontmatter"] == True:
         for File in Directories:
             File.find_frontmatter()
@@ -127,6 +127,23 @@ def get_information_from_file(Directories):
 
     for File in Directories:
         File.the_big_sweeper()
+
+def find_callback_file(Directories, search_string):
+    for File in Directories:
+        if search_string == str(File):
+            return File
+    raise Exception("No file found")
+
+def parse_files(Directories):
+    for File in Directories:
+        callbacks = File.the_big_parser()
+        print("callbacks: " + str(callbacks))
+        for callback in callbacks:
+            embed_file = find_callback_file(Directories, callback["title"])
+            print()
+            print("@@@@@@@@@@@@@@@@@@@@@")
+            print("file to look in: " + str(embed_file))
+            embed_file.find_section_in_file(callback["identifier"], callback["type"])
 
 BASE_DIR = "tests/vault"
 IGNORE_DIRECTORIES = find_pyignore_file(BASE_DIR)
@@ -139,9 +156,11 @@ directory = recursive_search(BASE_DIR)
 #     print(file)
 
 # get_information_from_file("tests/vault/b/Abelian Group.md")
-get_information_from_file(directory)
+get_information_from_files(directory)
 
-for file in directory:
-    print("----------------")
-    print(file)
-    print(repr(file))
+parse_files(directory)
+
+# for file in directory:
+#     print("----------------")
+#     print(file)
+#     # print(repr(file))

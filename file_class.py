@@ -56,8 +56,9 @@ class File:
         return self.title
 
     def __repr__(self):
-        return f'({self.title}, {self.path}, {self.tags})'
-        # return str(self.checkpoints["embeds"])
+        # return f'({self.title}, {self.path}, {self.tags})'
+        return str(self.header_sections) +"\n"+str(self.block_sections)
+        return str(self.embeds)
 
     def find_frontmatter(self):
         """Checks if there is frontmatter. Gets end line of pre-existing frontmatter if so.
@@ -122,7 +123,7 @@ class File:
 
         Returns:
             self.header_sections: Creates a header reference. Appends list of type:
-            [start, end, ref]: start line, end line, header name
+            {start, end, ref}: start line, end line, header name
         """
 
         REGEX_HEADER = "^\#{1,6}\s.*"   # 1-6 "# [some text]"
@@ -178,8 +179,8 @@ class File:
             current_index: Line number to start from
 
         Updates:
-            self.block_sections: Creates a block refernece. Appends list of type:
-            [start, end, ref]: start line, end line, header name
+            self.block_sections: Creates a block refernece. Appends dict of type:
+            {start, end, ref}: start line, end line, header name
         """
 
         REGEX_BLOCK = "^\^.{6}$"  # "^"" followed by 6 characters
@@ -228,13 +229,14 @@ class File:
             self.links: Update a link reference. Appends dict of type:
             {
                 line: index of line
+                is_embed: bool - is it an embed or not
                 type: can be "block", "header", "image", "page"
                 label: whether there is alt text
                 text: contents of the link
             }
         """
 
-        REGEX_LINK = "\[\[.*\]\]"               # "[[" + some text + "]]"
+        REGEX_LINK = "!?\[\[.*\]\]"             # 0/1"!" + "[["+text+"]]"
         REGEX_EMBED = "(?<=!\[\[).*(?=\]\])"    # "![[" text "]]" (get text)
         REGEX_BLOCK = "#\^.{6}$"                # "^" followed by 6 chars
         REGEX_HEADER = "#"                      # "#" lol
@@ -248,7 +250,9 @@ class File:
                 # big flag chain
                 # check if link is an embed or not
                 is_embed = False
+                # print("link:" + link)
                 does_line_have_embed = re.search(REGEX_EMBED, link)
+                # print("e: " + str(does_line_have_embed))
                 # if yea then raw text is the regex, otherwise strip the [[]]
                 if does_line_have_embed != None:
                     is_embed = True
@@ -274,11 +278,48 @@ class File:
                 
                 self.links.append({
                     "line": current_index,
+                    "is_embed": is_embed,
                     "type": link_type,
                     "label": label,
                     "text": raw_text
                 })
         else:
+            return
+
+    def find_section_in_file(self, reference, type):
+        REGEX_LINK = "(?<=!?\[\[).*(?=\]\])"
+        REGEX_ALT = "\|"
+        
+        if type == "block":
+            for block in self.block_sections:
+                print("----------------")
+                clean_block = block["ref"]
+                print("block ref: " + clean_block)
+                
+                if clean_block == reference:
+                    print("FOUND")
+                    return block
+            return
+        elif type == "header":
+            for header in self.header_sections:
+                print("----------------")
+                clean_header = re.search(REGEX_LINK, header["ref"])
+                if clean_header != None:
+                    print("original title: " + header["ref"])
+                    clean_header = clean_header.group()
+                    if re.search(REGEX_ALT, clean_header) != -1:
+                        clean_header = clean_header.replace("|", " ", 1)
+                        print(clean_header)
+                else:
+                    clean_header = header["ref"]
+                print("header ref: " + clean_header)
+                
+                if clean_header == reference:
+                    print("FOUND")
+                    return header
+            return
+        elif type == "page":
+            print("FOUND")
             return
 
     def the_big_sweeper(self):
@@ -292,12 +333,39 @@ class File:
             self.links: link types and whether it is an embed or has alt text
         '''
 
-
         for i, line in enumerate(self.contents):
             self.look_for_headers(line, i)
             self.look_for_blocks(line, i)
             self.look_for_links(line, i)
         self.get_section_contents()
+    
+    def the_big_parser(self):
+        REGEX_PURE_TITLE = ".*(?=#|\|)"
+        REGEX_ID_BLOCK = "(?<=#)\^.{6}"
+        REGEX_ID_HEADER = "(?<=#).*"
+        
+        callbacks = []
+        # print("----------------")
+        # print("title: " + self.title)
+        # print("links: " + str(self.links))
+        for link in self.links:
+            if link["is_embed"] and link["type"] != "image":
+                raw_text = link["text"]
+                if link["type"] != "page" or link["label"]:
+                    raw_text = re.search(REGEX_PURE_TITLE, raw_text).group()
+                
+                identifier = link["text"]
+                if link["type"] == "block":
+                    identifier = re.search(REGEX_ID_BLOCK, link["text"]).group()
+                elif link["type"] == "header":
+                    identifier = re.search(REGEX_ID_HEADER, link["text"]).group()
+                
+                callbacks.append({
+                    "title": raw_text,
+                    "identifier": identifier,
+                    "type": link["type"]
+                    })
+        
+        return callbacks
 
-
-print(help(File.look_for_links))
+        
