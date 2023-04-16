@@ -288,15 +288,20 @@ class File:
         REGEX_LINK = "(?<=!?\[\[).*(?=\]\])"
         REGEX_ALT = "\|"
         
+        # get block embed
         if type == "block":
+            # look through each block for a matching reference
             for block in self.block_sections:
                 # set to reference
                 clean_block = block["ref"]
                 
                 if clean_block == reference:
+                    # get the contents of the section
                     return self.get_section_contents(block)
             else:
                 raise Exception("No block was found")
+        
+        # get header embed
         elif type == "header":
             for header in self.header_sections:
                 # if header is e.g. ![[header name]] then get only text
@@ -312,17 +317,24 @@ class File:
                 else:
                     clean_header = header["ref"]
                 
+                # get the contents of the section
                 if clean_header == reference:
                     return self.get_section_contents(header)
             else:
                 raise Exception("No header was found")
+        
+        # get page embed 
         elif type == "page":
             print("FOUND")
+            # make up a dict to match format with other types
             temp_section = {"start": 0, "end": len(self.contents)}
             return self.get_section_contents(temp_section)
         else:
             raise Exception("Nothing was found")
 
+    def replace_with_embed(self, section, line):
+        self.contents = self.contents[:line] + section + self.contents[line+1:]
+    
     def the_big_sweeper(self):
         '''Iterate over every line finding headers, blocks, and links
 
@@ -363,7 +375,8 @@ class File:
                 callbacks.append({
                     "title": raw_text,
                     "identifier": identifier,
-                    "type": link["type"]
+                    "type": link["type"],
+                    "line": link["line"]
                     })
         
         return callbacks
