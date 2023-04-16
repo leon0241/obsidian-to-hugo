@@ -21,23 +21,22 @@ class File:
         self.tags = []
 
         self.contains_frontmatter = False
-        
+
         self.header_sections = []
         self.block_sections = []
 
         self.checkpoints = {
             "frontmatter_end": 0,
             "tag_line": 0,
-            "link_lines": [],
-            "image_lines": []
+            "embeds": [],
         }
-
 
     def __str__(self):
         return self.title
 
     def __repr__(self):
-        return f'({self.title}, {self.path}, {self.tags})'
+        # return f'({self.title}, {self.path}, {self.tags})'
+        return str(self.checkpoints["embeds"])
 
     def get_title(self):
         return self.title
@@ -123,7 +122,7 @@ class File:
             header_end = current_index
             eof_index = len(self.contents) - 1
 
-            # while there isn't a next header, and 
+            # while there isn't a next header, and
             while (search_result == None) and (header_end < eof_index):
                 header_end += 1
                 # print("line: " + self.contents[header_end])
@@ -184,14 +183,56 @@ class File:
 
     def get_section_contents(self):
         for section in self.header_sections:
-            for i in range(section["start"], section["end"]):
-                print(self.contents[i])
+            print("printing a section")
+            subsection = self.contents[section["start"]:section["end"]]
+            for i in subsection:
+                print(i)
+            # for i in range(section["start"], section["end"]):
+            #     print(self.contents[i])
 
-    def look_for_links(self, line):
-        return
+    def look_for_links(self, line, current_index):
+        REGEX_LINK = "\[\[.*\]\]"
+        REGEX_EMBED = "(?<=!\[\[).*(?=\]\])"
+        REGEX_BLOCK = "#\^.{1,6}$"
+        REGEX_HEADER = "#"  # lol
+        REGEX_ALT = "\|"
+        REGEX_IMAGE = "\.(png|jpg|svg|webp)"
 
-    def look_for_embeds(self, line):
-        return
+        does_line_have_link = re.findall(REGEX_LINK, line)
+        # if it does have a header
+        if does_line_have_link != None:
+            for link in does_line_have_link:
+                # flags
+                # check if file is embed or not
+                is_embed = False
+                does_line_have_embed = re.search(REGEX_EMBED, link)
+                if does_line_have_embed != None:
+                    is_embed = True
+                    raw_text = does_line_have_embed.group()
+                else:
+                    raw_text = link[2:-2]
+
+                link_type = ""
+                if re.search(REGEX_BLOCK, raw_text) != None:
+                    link_type = "block"
+                elif re.search(REGEX_HEADER, raw_text) != None:
+                    link_type = "header"
+                elif re.search(REGEX_IMAGE, raw_text) != None:
+                    link_type = "image"
+                else:
+                    link_type = "page"
+
+                label = False
+                if re.search(REGEX_ALT, raw_text) != None:
+                    label = True
+                self.checkpoints["embeds"].append({
+                    "line": current_index,
+                    "type": link_type,
+                    "label": label,
+                    "text": raw_text
+                })
+        else:
+            return
 
     def the_big_sweeper(self):
         # print("--------------")
@@ -201,6 +242,5 @@ class File:
             # continue
             self.look_for_headers(line, i)
             self.look_for_blocks(line, i)
-            self.look_for_links(line)
-            self.look_for_embeds(line)
+            self.look_for_links(line, i)
         self.get_section_contents()

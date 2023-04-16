@@ -13,12 +13,15 @@ def find_pyignore_file(root):
     Attempts to find a .py_ignore file
     '''
     
+    # TODO: use pathlib library
+    # https://medium.com/@ageitgey/python-3-quick-tip-the-easy-way-to-deal-with-file-paths-on-windows-mac-and-linux-11a072b58d5f
+
     # for each file in the root of the destination
     for filename in os.listdir(root):
         # if said filename is .py_ignore then
         if filename == ".py_ignore":
             # get correct file location
-            f_append = root + "/" + filename
+            f_append = os.path.join(root, filename)
 
             # open file and store the values in an array, return
             with open(f_append, 'r') as f:
@@ -40,7 +43,7 @@ def ini_read(base):
     
     # search strings
     search = {
-        "tag_id": config['SEARCH STRINGS']['tag_id']
+        "tag_id": config['SEARCH STRINGS']['tag_id'],
     }
 
     # general options
@@ -48,6 +51,8 @@ def ini_read(base):
         "make_frontmatter": config['OPTIONS'].getboolean('generate_frontmatter'),
         "make_frontmatter_title": config['OPTIONS'].getboolean('frontmatter_title'),
         "make_frontmatter_tags": config['OPTIONS'].getboolean('frontmatter_tags'),
+
+        "images_path": config['OPTIONS']['images_path']
     }
     return search, options
 
@@ -136,5 +141,7 @@ directory = recursive_search(BASE_DIR)
 # get_information_from_file("tests/vault/b/Abelian Group.md")
 get_information_from_file(directory)
 
-# for file in directory:
-#     print(repr(file))
+for file in directory:
+    print("----------------")
+    print(file)
+    print(repr(file))
