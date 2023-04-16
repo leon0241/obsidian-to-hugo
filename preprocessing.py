@@ -174,15 +174,20 @@ def parse_embeds(Directories):
         # Replace embed hyperlinks in the text with the embed sections
         for section in extracted_sections:
             File.replace_with_embed(section["section"], section["line"])
-    
-    # print output
-    for File in Directories:
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print("-----------------------------")
-        print(File)
-        for line in File.contents:
-            print(line)
 
+def parse_links(Directories):
+    for File in Directories:
+        callbacks = File.the_big_wikilink_converter()
+        print("callbacks: " + str(callbacks))
+
+        for callback in callbacks:
+            # Get file that we want to search for
+            embed_file = find_callback_file(Directories, callback["title"])
+            # Get section of the file as a list of lines
+            hyperlink_path = embed_file.path
+            File.convert_link_to_md(hyperlink_path, callback["text"], callback["line"])
+        
+        
 def write_to_files(Directories, write_path):
     for File in Directories:
         new_path = write_path / Path(*File.path.parts[2:])
@@ -208,8 +213,8 @@ directory = recursive_search(BASE_DIR)
 get_information_from_files(directory)
 
 parse_embeds(directory)
-write_to_files(directory, INI_DIRS["write_path"])
-# parse_links(directory)
+parse_links(directory)
+# write_to_files(directory, INI_DIRS["write_path"])
 
 # for file in directory:
 #     print("----------------")

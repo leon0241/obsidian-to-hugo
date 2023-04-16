@@ -325,7 +325,6 @@ class File:
         
         # get page embed 
         elif type == "page":
-            print("FOUND")
             # make up a dict to match format with other types
             temp_section = {"start": 0, "end": len(self.contents)}
             return self.get_section_contents(temp_section)
@@ -381,4 +380,20 @@ class File:
         
         return callbacks
 
-        
+    def the_big_wikilink_converter(self):
+        REGEX_PURE_TITLE = ".*(?=#|\|)"
+        callbacks = []
+        for link in self.links:
+            raw_text = link["text"]
+            if link["type"] not in ["page", "image"] or link["label"]:
+                raw_text = re.search(REGEX_PURE_TITLE, raw_text).group()
+                print(raw_text)
+                
+                callbacks.append({
+                    "title": raw_text,
+                    "text": link["text"],
+                    "line": link["line"]
+                    })
+            # print(link)
+            # if link["is_embed"] == False:
+                
