@@ -1,4 +1,4 @@
-**Tags:** #Algebra/Groups #Definition #Course/FPM 
+**Tags:** #Algebra/Groups #Definition #Course/FPM
 
 > [!Theorem]+ Thm: [[Defining a Group]]
 > 
