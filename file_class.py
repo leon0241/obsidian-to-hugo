@@ -1,5 +1,5 @@
 import regex as re
-
+import os
 
 class File:
     """Represents a markdown file and related information.
@@ -343,20 +343,6 @@ class File:
     def replace_with_embed(self, section, line):
         self.contents = self.contents[:line] + section + self.contents[line+1:]
         section_length = len(section)
-
-        # for link in self.links:
-        #     if link["line"] >= line:
-        #         link["line"] += section_length
-        # for header in self.header_sections:
-        #     if header["start"] >= line:
-        #         header["start"] += section_length
-        #     if header["end"] >= line:
-        #         header["end"] += section_length
-        # for block in self.block_sections:
-        #     if block["start"] >= line:
-        #         block["start"] += section_length
-        #     if block["end"] >= line:
-        #         block["end"] += section_length
     
     def convert_link_to_md(self, hyperlink_path, hyperlink_title, callback):
         line = callback["line"]
@@ -367,17 +353,22 @@ class File:
         REGEX_LINK = "!?\[\[.*\]\]"             # 0/1"!" + "[["+text+"]]"
         REGEX_LABEL = "(?<=\|).*"
 
+        for i in range(len(hyperlink_path.parts) - 1):
+            hyperlink_path = os.pardir / hyperlink_path
+        print(len(hyperlink_path.parts))
+
+        hyperlink_path = str(hyperlink_path).replace("\\", "/")
+        hyperlink_path = str(hyperlink_path).replace(" ", "%20")
+
         display_text = hyperlink_title
         if callback["label"]:
             display_text = re.search(REGEX_LABEL, callback["text"]).group()
-        
-        hyperlink_path = str(hyperlink_path).replace("\\", "\\\\")
 
         new_link = "[" + display_text + "](" + str(hyperlink_path) + ")"
-        print(new_link)
+        # print(new_link)
 
         search_line = self.contents[line]
-        print(search_line)
+        # print(search_line)
         self.contents[line] = re.sub(REGEX_LINK, new_link, search_line)
         # New link construction
 

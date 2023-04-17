@@ -1,6 +1,6 @@
 **Tags:** #Algebra/Groups #Definition #Course/FPM
 
-> [!Theorem]+ Thm: [Defining a Group](\tests\content\b\Defining a Group.md)
+> [!Theorem]+ Thm: [Defining a Group](../../../tests/content/b/Defining%20a%20Group.md)
 > 
 > For any operation $\ast$, We say a non-empty set G is a *group* under $\ast$, or more formally that (G, $\ast$) is a group, if the following four axioms hold:
 > - **G1 - Closure:** $\ast$ is a binary operation on G, that is $a\ast b \in G$ for all $a,b\in G$.
