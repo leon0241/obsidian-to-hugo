@@ -189,8 +189,8 @@ def parse_embeds(Directories):
 
 def parse_links(Directories):
     for File in Directories:
-        print("@@@@@@@@@@@@@@")
-        print("FILENAME: " + str(File))
+        # print("@@@@@@@@@@@@@@")
+        # print("FILENAME: " + str(File))
         callbacks = File.the_big_wikilink_converter()
         # print("callbacks: " + str(callbacks))
 

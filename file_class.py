@@ -254,9 +254,7 @@ class File:
                 # big flag chain
                 # check if link is an embed or not
                 is_embed = False
-                # print("link:" + link)
                 does_line_have_embed = re.search(REGEX_EMBED, link)
-                # print("e: " + str(does_line_have_embed))
                 # if yea then raw text is the regex, otherwise strip the [[]]
                 if does_line_have_embed != None:
                     is_embed = True
@@ -347,15 +345,11 @@ class File:
     def convert_link_to_md(self, hyperlink_path, hyperlink_title, callback):
         line = callback["line"]
 
-        # print("path: " + str(hyperlink_path))
-        # print("text: " + str(callback["text"]))
-        # print("line: " + str(line))
         REGEX_LINK = "!?\[\[.*\]\]"             # 0/1"!" + "[["+text+"]]"
         REGEX_LABEL = "(?<=\|).*"
 
         for i in range(len(hyperlink_path.parts) - 1):
             hyperlink_path = os.pardir / hyperlink_path
-        print(len(hyperlink_path.parts))
 
         hyperlink_path = str(hyperlink_path).replace("\\", "/")
         hyperlink_path = str(hyperlink_path).replace(" ", "%20")
@@ -365,10 +359,8 @@ class File:
             display_text = re.search(REGEX_LABEL, callback["text"]).group()
 
         new_link = "[" + display_text + "](" + str(hyperlink_path) + ")"
-        # print(new_link)
 
         search_line = self.contents[line]
-        # print(search_line)
         self.contents[line] = re.sub(REGEX_LINK, new_link, search_line)
         # New link construction
 
@@ -396,9 +388,6 @@ class File:
         REGEX_ID_HEADER = "(?<=#).*"
         
         callbacks = []
-        # print("----------------")
-        # print("title: " + self.title)
-        # print("links: " + str(self.links))
         for link in self.links:
             if link["is_embed"] and link["type"] != "image":
                 raw_text = link["text"]
@@ -425,6 +414,7 @@ class File:
     def the_big_wikilink_converter(self):
         REGEX_PURE_TITLE = ".*(?=#|\|)"
         callbacks = []
+        images = []
         for link in self.links:
             if link["type"] != "image" and link["is_embed"]:
                 continue
@@ -440,7 +430,10 @@ class File:
                     "line": link["line"],
                     "label": link["label"]
                     })
+            
+            if link["type"] == "image":
+                images.append({
+                    "title": raw_text,
+                    "line": link["line"],
+                })
         return callbacks
-            # print(link)
-            # if link["is_embed"] == False:
-                
