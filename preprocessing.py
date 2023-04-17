@@ -138,6 +138,18 @@ def get_information_from_files(Directories):
     for File in Directories:
         File.the_big_sweeper()
 
+def update_information_from_files(Directories):
+    for File in Directories:
+        File.reset_link_points()
+    if INI_OPTIONS["make_frontmatter"] == True:
+        if INI_OPTIONS["make_frontmatter_tags"] == True:
+            for File in Directories:
+                File.find_tags(INI_STRINGS["tag_id"])
+
+    for File in Directories:
+        File.find_tags(INI_STRINGS["tag_id"])
+        File.the_big_sweeper()
+
 
 def find_callback_file(Directories, search_string):
     for File in Directories:
@@ -151,7 +163,7 @@ def parse_embeds(Directories):
     for File in Directories:
         # Gets location of embeds to insert
         callbacks = File.the_big_parser()
-        print("callbacks: " + str(callbacks))
+        # print("callbacks: " + str(callbacks))
 
         # List of embed sections
         extracted_sections = []
@@ -177,23 +189,31 @@ def parse_embeds(Directories):
 
 def parse_links(Directories):
     for File in Directories:
+        print("@@@@@@@@@@@@@@")
+        print("FILENAME: " + str(File))
         callbacks = File.the_big_wikilink_converter()
-        print("callbacks: " + str(callbacks))
+        # print("callbacks: " + str(callbacks))
 
         for callback in callbacks:
             # Get file that we want to search for
             embed_file = find_callback_file(Directories, callback["title"])
             # Get section of the file as a list of lines
             hyperlink_path = embed_file.path
-            File.convert_link_to_md(hyperlink_path, callback["text"], callback["line"])
-        
-        
-def write_to_files(Directories, write_path):
+            hyperlink_title = embed_file.title
+            File.convert_link_to_md(hyperlink_path, hyperlink_title, callback)
+
+def create_new_links(Directories, write_path):
     for File in Directories:
         new_path = write_path / Path(*File.path.parts[2:])
-        Path(new_path.parent).mkdir(parents=True, exist_ok=True)
+        File.path = new_path
+    return
+
+
+def write_to_files(Directories, write_path):
+    for File in Directories:
+        Path(File.path.parent).mkdir(parents=True, exist_ok=True)
         
-        with open(new_path, "w") as f:
+        with open(File.path, "w") as f:
             for line in File.contents:
                 f.write(line)
     return
@@ -213,8 +233,10 @@ directory = recursive_search(BASE_DIR)
 get_information_from_files(directory)
 
 parse_embeds(directory)
+update_information_from_files(directory)
+create_new_links(directory, INI_DIRS["write_path"])
 parse_links(directory)
-# write_to_files(directory, INI_DIRS["write_path"])
+write_to_files(directory, INI_DIRS["write_path"])
 
 # for file in directory:
 #     print("----------------")

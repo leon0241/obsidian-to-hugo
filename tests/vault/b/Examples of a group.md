@@ -1,7 +1,7 @@
 **Tags:** #Collection #Algebra/Groups #Course/FPM 
 ###### [[Examples of a group]]
 
-> [!Example]+ Ex: [[Examples of a group|Addition under  Z]]
+> [!Example]+ Ex: [[Examples of a group|Addition under N, Z]]
 > The integers $\Z = \{\dots,-3,-2,-1,0,1,2,3,\dots \}$ form a group under the operation $g\ast h = g+h$.
 > - **G1 - Closure:** $g+ h\in\Z$ for all $g,h\in\Z$ (infinite and countable)
 > - **G2 - Associativity:** $(g+h)+i=g+(h+i)$ for all $g,h,i\in\Z$

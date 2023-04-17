@@ -34,10 +34,10 @@ class File:
         tmpfile = open(self.path, "r").readlines()
         self.contents = tmpfile
         # every line has a \n, except the last one
-        for i in range(len(tmpfile)-1):
-            line = tmpfile[i]
-            # if the line is blank then leave it
-            self.contents[i] = line[:-1] if line != "\n" else line
+        # for i in range(len(tmpfile)-1):
+        #     line = tmpfile[i]
+        #     # if the line is blank then leave it
+        #     self.contents[i] = line[:-1] if line != "\n" else line
 
         self.tags = []
 
@@ -59,6 +59,15 @@ class File:
         # return f'({self.title}, {self.path}, {self.tags})'
         return str(self.header_sections) +"\n"+str(self.block_sections)
         return str(self.embeds)
+
+    def reset_link_points(self):
+        self.tags = []
+        self.header_sections = []
+        self.block_sections = []
+        self.links = []
+        self.checkpoints["tag_line"] = 0
+        
+
 
     def find_frontmatter(self):
         """Checks if there is frontmatter. Gets end line of pre-existing frontmatter if so.
@@ -333,7 +342,47 @@ class File:
 
     def replace_with_embed(self, section, line):
         self.contents = self.contents[:line] + section + self.contents[line+1:]
+        section_length = len(section)
+
+        # for link in self.links:
+        #     if link["line"] >= line:
+        #         link["line"] += section_length
+        # for header in self.header_sections:
+        #     if header["start"] >= line:
+        #         header["start"] += section_length
+        #     if header["end"] >= line:
+        #         header["end"] += section_length
+        # for block in self.block_sections:
+        #     if block["start"] >= line:
+        #         block["start"] += section_length
+        #     if block["end"] >= line:
+        #         block["end"] += section_length
     
+    def convert_link_to_md(self, hyperlink_path, hyperlink_title, callback):
+        line = callback["line"]
+
+        # print("path: " + str(hyperlink_path))
+        # print("text: " + str(callback["text"]))
+        # print("line: " + str(line))
+        REGEX_LINK = "!?\[\[.*\]\]"             # 0/1"!" + "[["+text+"]]"
+        REGEX_LABEL = "(?<=\|).*"
+
+        display_text = hyperlink_title
+        if callback["label"]:
+            display_text = re.search(REGEX_LABEL, callback["text"]).group()
+        
+        hyperlink_path = str(hyperlink_path).replace("\\", "\\\\")
+
+        new_link = "[" + display_text + "](" + str(hyperlink_path) + ")"
+        print(new_link)
+
+        search_line = self.contents[line]
+        print(search_line)
+        self.contents[line] = re.sub(REGEX_LINK, new_link, search_line)
+        # New link construction
+
+
+
     def the_big_sweeper(self):
         '''Iterate over every line finding headers, blocks, and links
 
@@ -364,7 +413,9 @@ class File:
                 raw_text = link["text"]
                 if link["type"] != "page" or link["label"]:
                     raw_text = re.search(REGEX_PURE_TITLE, raw_text).group()
-                
+                    while re.search(REGEX_PURE_TITLE, raw_text) != None:
+                        raw_text = re.search(REGEX_PURE_TITLE, raw_text).group()
+
                 identifier = link["text"]
                 if link["type"] == "block":
                     identifier = re.search(REGEX_ID_BLOCK, link["text"]).group()
@@ -375,7 +426,7 @@ class File:
                     "title": raw_text,
                     "identifier": identifier,
                     "type": link["type"],
-                    "line": link["line"]
+                    "line": link["line"],
                     })
         
         return callbacks
@@ -384,16 +435,21 @@ class File:
         REGEX_PURE_TITLE = ".*(?=#|\|)"
         callbacks = []
         for link in self.links:
+            if link["type"] != "image" and link["is_embed"]:
+                continue
+
             raw_text = link["text"]
             if link["type"] not in ["page", "image"] or link["label"]:
                 raw_text = re.search(REGEX_PURE_TITLE, raw_text).group()
-                print(raw_text)
-                
+
+            if link["type"] != "image":
                 callbacks.append({
                     "title": raw_text,
                     "text": link["text"],
-                    "line": link["line"]
+                    "line": link["line"],
+                    "label": link["label"]
                     })
+        return callbacks
             # print(link)
             # if link["is_embed"] == False:
                 

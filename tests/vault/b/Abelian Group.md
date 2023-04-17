@@ -13,7 +13,7 @@
 
 #### [[Abelian Group|Label]]
 
-> [!Definition]+ Def: [[Abelian Group 2]]
+> [!Definition]+ Def: [[Abelian Group|Abelian Group 2]]
 > 
 > The definition of abelian doesn't include this second definition as it is just for testing
 
